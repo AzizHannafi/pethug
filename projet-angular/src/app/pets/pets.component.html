@@ -1,0 +1,106 @@
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Available Pets</h1>
+        <p class="text-gray-600">Find your perfect companion</p>
+      </div>
+
+      <div class="card p-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <input
+              id="search"
+              type="text"
+              [(ngModel)]="searchTerm"
+              (input)="applyFilters()"
+              class="input-field"
+              placeholder="Search by name, breed, type..."
+            />
+          </div>
+          
+          <div>
+            <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort by</label>
+            <select
+              id="sort"
+              [(ngModel)]="sortBy"
+              (change)="applyFilters()"
+              class="input-field"
+            >
+              <option value="newest">Most Recent</option>
+              <option value="most-liked">Most Liked</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Pet Type</label>
+            <select
+              id="type"
+              [(ngModel)]="typeFilter"
+              (change)="applyFilters()"
+              class="input-field"
+            >
+              <option value="">All Types</option>
+              <option value="dog">Dogs</option>
+              <option value="cat">Cats</option>
+              <option value="bird">Birds</option>
+              <option value="rabbit">Rabbits</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <p class="text-gray-600">Showing {{ pets.length }} pets</p>
+      </div>
+
+
+      @if (pets.length !=0) {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div *ngFor="let pet of pets" class="card p-6">
+            <img
+              [src]="pet.imageUrl"
+              [alt]="pet.name"
+              class="w-full h-48 object-cover rounded-lg mb-4"
+            />
+            
+            <div class="space-y-3">
+              <div class="flex justify-between items-start">
+                <h3 class="text-lg font-semibold text-gray-900">{{ pet.name }}</h3>
+              </div>
+              
+              <p class="text-gray-600 text-sm">{{ pet.breed }} • {{ pet.age }} years old</p>
+              <p class="text-gray-600 text-sm line-clamp-2">{{ pet.description }}</p>
+              
+              <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <div class="flex items-center space-x-4">
+                  <button
+                    class="flex items-center space-x-1 text-gray-500 hover:text-red-500 disabled:opacity-50"
+                  >
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+                    </svg>
+                    <span class="text-sm">{{ pet.likes }}</span>
+                  </button>
+                  <span class="text-gray-400">•</span>
+                  <span class="text-sm text-gray-500">{{ pet.comments.length }} comments</span>
+                </div>
+                <a [routerLink]="['/pets/details', pet.id]" class="text-primary-500 hover:text-primary-600 font-medium text-sm">
+                  View Details
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+      @else { 
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No pets found</h3>
+        <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
+      </div>
+      }
+
+    </div>

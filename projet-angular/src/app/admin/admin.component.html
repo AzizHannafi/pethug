@@ -1,0 +1,62 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+        <p class="text-gray-600">Manage pets, blog posts, and reports</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Pets Management -->
+        <div class="card p-6">
+            <div class="flex items-center mb-4">
+            <svg class="w-8 h-8 text-primary-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 2L3 7v11a1 1 0 001 1h3v-7a1 1 0 011-1h4a1 1 0 011 1v7h3a1 1 0 001-1V7l-7-5z"/>
+            </svg>
+            <h2 class="text-xl font-semibold text-gray-900">Pets Management</h2>
+            </div>
+            <p class="text-gray-600 mb-6">Add, edit, or remove pets from the adoption list</p>
+            <div class="space-y-3">
+                <a routerLink="/admin/pets" class="block btn-primary text-center">
+                    Manage Pets
+                </a>
+                <a routerLink="/pets/create" class="block btn-outline text-center">
+                    Add New Pet
+                </a>
+            </div>
+        </div>
+
+        <!-- Blog Management -->
+        <div class="card p-6">
+            <div class="flex items-center mb-4">
+            <svg class="w-8 h-8 text-primary-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h2 class="text-xl font-semibold text-gray-900">Blog Management</h2>
+            </div>
+            <p class="text-gray-600 mb-6">Create, edit, or delete blog posts</p>
+            <div class="space-y-3">
+            <a routerLink="/admin/blogs" class="block btn-primary text-center">
+                Manage Blog Posts
+            </a>
+            <a routerLink="/blogs/create" class="block btn-outline text-center">
+                Create New Post
+            </a>
+            </div>
+        </div>
+
+        <!-- Reports Management -->
+        <div class="card p-6">
+          <div class="flex items-center mb-4">
+            <svg class="w-8 h-8 text-primary-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0h-3m-2 5a4 4 0 01-4-4V9a5 5 0 0110 0v6a4 4 0 01-4 4z"/>
+            </svg>
+            <h2 class="text-xl font-semibold text-gray-900">Reports Management</h2>
+          </div>
+          <p class="text-gray-600 mb-6">Review and manage user reports</p>
+          <div class="space-y-3">
+            <a routerLink="/admin/reports" class="block btn-primary text-center">
+              View Reports
+            </a>
+          </div>
+        </div>
+    </div>
+</div>

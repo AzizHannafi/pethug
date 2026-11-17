@@ -1,0 +1,192 @@
+   <div *ngIf="pet" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+     <!-- Pet Details -->
+     <div class="card p-8 mb-8">
+        <!-- <div class="text-right  px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+          <a class="text-blue-600 hover:text-blue-900" [routerLink]="['/pets', pet.id]">Edit</a>
+          <button class="text-red-600 hover:text-red-900">Delete</button>
+        </div> -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <img
+              [src]="pet.imageUrl"
+              [alt]="pet.name"
+              class="w-full h-96 object-cover rounded-lg"
+            />
+          </div>
+          
+          <div class="space-y-6">
+            <div class="flex justify-between items-start">
+              <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ pet.name }}</h1>
+                <p class="text-xl text-gray-600">{{ pet.breed }} • {{ pet.age }} years old</p>
+              </div>
+              
+              <!-- Report Button -->
+              <button
+                (click)="showReportModal = true"
+                class="text-red-500 hover:text-red-700 text-sm font-medium"
+              >
+                Report
+              </button>
+            </div>
+            
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span class="font-medium text-gray-700">Size:</span>
+                  <span class="text-gray-600 ml-2">{{ pet.size | titlecase }}</span>
+                </div>
+                <div>
+                  <span class="font-medium text-gray-700">Gender:</span>
+                  <span class="text-gray-600 ml-2">{{ pet.gender | titlecase }}</span>
+                </div>
+                <div>
+                  <span class="font-medium text-gray-700">Color:</span>
+                  <span class="text-gray-600 ml-2">{{ pet.color }}</span>
+                </div>
+                <div>
+                  <span class="font-medium text-gray-700">Location:</span>
+                  <span class="text-gray-600 ml-2">{{ pet.location }}</span>
+                </div>
+              </div>
+              
+              <div class="space-y-2">
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 mr-2" [class.text-green-500]="pet.isVaccinated" [class.text-red-500]="!pet.isVaccinated" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span class="text-sm">{{ pet.isVaccinated ? 'Vaccinated' : 'Not Vaccinated' }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-2">About {{ pet.name }}</h3>
+              <p class="text-gray-600">{{ pet.description }}</p>
+            </div>
+            
+            <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+              <div class="flex items-center space-x-4">
+                <button
+                 (click)="likePet()"
+                  class="flex items-center space-x-2 text-gray-500 hover:text-red-500 disabled:opacity-50"
+                >
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+                  </svg>
+                  <span>{{ pet.likes }} likes</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Comments Section -->
+      <div class="card p-8">
+        <h3 class="text-xl font-semibold text-gray-900 mb-6">Comments ({{ pet.comments.length }})</h3>
+        
+        <!-- Add Comment Form -->
+        <div class="mb-8">
+          <form (ngSubmit)="addComment()" #commentForm="ngForm">
+            <div class="space-y-4">
+              <textarea
+                [(ngModel)]="newComment"
+                name="comment"
+                required
+                rows="3"
+                class="input-field"
+                placeholder="Write a comment..."
+              ></textarea>
+              <button
+                type="submit"
+                [disabled]="!commentForm.form.valid || isSubmitting"
+                class="btn-primary disabled:opacity-50"
+              >
+                {{ isSubmitting ? 'Posting...' : 'Post Comment' }}
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        
+        <!-- Comments List -->
+        <div class="space-y-6">
+          <div *ngFor="let comment of pet.comments" class="border-b border-gray-200 pb-6 last:border-b-0">
+            <div class="flex items-start space-x-3">
+              <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <span class="text-sm font-medium text-gray-600">{{ comment.userName.charAt(0) }}</span>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-1">
+                  <span class="font-medium text-gray-900">{{ comment.userName }}</span>
+                  <span class="text-sm text-gray-500">{{ comment.datePosted | date:'short' }}</span>
+                </div>
+                <p class="text-gray-700">{{ comment.content }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="pet.comments.length === 0" class="text-center py-8 text-gray-500">
+            No comments yet. Be the first to comment!
+          </div>
+        </div>
+      </div>
+    </div>
+<div *ngIf="showReportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Report Pet</h3>
+        <form (ngSubmit)="submitReport()" #reportForm="ngForm">
+          <div class="space-y-4">
+            <div>
+              <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+              <select
+                id="reason"
+                name="reason"
+                required
+                [(ngModel)]="reportReason"
+                class="input-field"
+              >
+                <option value="">Select a reason</option>
+                <option value="inappropriate">Inappropriate content</option>
+                <option value="spam">Spam</option>
+                <option value="fake">Fake listing</option>
+                <option value="abuse">Animal abuse</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                id="description"
+                name="description"
+                required
+                rows="3"
+                [(ngModel)]="reportDescription"
+                class="input-field"
+                placeholder="Please provide more details..."
+              ></textarea>
+            </div>
+          </div>
+          
+          <div class="flex justify-end space-x-3 mt-6">
+            <button
+              type="button"
+              (click)="showReportModal = false"
+              class="px-4 py-2 text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="!reportForm.form.valid"
+              class="btn-primary disabled:opacity-50"
+            >
+              {{ 'Submit Report' }}
+            </button>
+          </div>
+        </form>
+      </div>
+</div>

@@ -1,0 +1,156 @@
+name: pethug
+
+# PetHug - infrastructure for the Spring Boot API.
+#
+#   docker compose up -d                   # everything below
+#
+# First run pulls ~3.2 GB for the AI assistant, plus its model. To start
+# without it:
+#
+#   docker compose up -d mysql keycloak-db keycloak adminer
+#
+# This file runs the INFRASTRUCTURE only. The Spring Boot API is started
+# separately, from this same folder:
+#
+#   ./mvnw spring-boot:run        (mvnw.cmd on Windows)  -> http://localhost:8086
+#
+# Two databases, deliberately separate: the API owns "petsdb", Keycloak owns
+# "keycloak". Neither can corrupt the other, and either can be reset alone.
+#
+# Keycloak   http://localhost:8080   console admin/admin, realm "pet"
+# Adminer    http://localhost:8087   see the credentials in the table below
+#
+# | Adminer field | Application DB | Keycloak DB |
+# |---------------|----------------|-------------|
+# | System        | MySQL          | MySQL       |
+# | Server        | mysql          | keycloak-db |
+# | Username      | root           | root        |
+# | Password      | root           | root        |
+# | Database      | petsdb         | keycloak    |
+
+services:
+
+  # ------------------------------------------------- application database
+  mysql:
+    image: mysql:8.0
+    container_name: pethug-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: petsdb
+    ports:
+      # Published: the Spring Boot API runs on the host and connects here.
+      - "0.0.0.0:3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks: [pet-network]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+
+  # ----------------------------------------------------- Keycloak database
+  keycloak-db:
+    image: mysql:8.0
+    container_name: pethug-keycloak-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: keycloak
+    # Not published: only Keycloak and Adminer talk to it, and 3306 is already
+    # taken on the host by the application database.
+    volumes:
+      - keycloak-db-data:/var/lib/mysql
+    networks: [pet-network]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+
+  # ------------------------------------------------------------- identity
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: pethug-keycloak
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      # Console account (http://localhost:8080)
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      # Persistent storage, instead of the throwaway in-container H2 file.
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://keycloak-db:3306/keycloak
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: root
+      # Pinned, so the "iss" claim is always exactly this URL whatever host the
+      # browser used. It must match the API's KEYCLOAK_ISSUER_URI.
+      KC_HOSTNAME: http://localhost:8080
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "false"
+    volumes:
+      # Realm "pet" with its client, roles and demo users, imported on first start.
+      - ./keycloak/realm-pet.json:/opt/keycloak/data/import/realm-pet.json:ro
+    ports:
+      - "0.0.0.0:8080:8080"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks: [pet-network]
+
+  # ------------------------------------------------------- database explorer
+  # Handles both databases above (and PostgreSQL, SQLite, MS SQL... if needed).
+  adminer:
+    image: adminer:latest
+    container_name: pethug-adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+    ports:
+      - "0.0.0.0:8087:8080"
+    depends_on: [mysql, keycloak-db]
+    networks: [pet-network]
+
+  # ------------------------------------------------------------ chat model
+  # One container, not two: it serves the API and downloads the model itself on
+  # first run. The pull is skipped once the model is in the volume, and a failed
+  # download never stops the server - it is simply retried on the next restart.
+  # First run pulls ~3.2 GB for the image, then ~800 MB for the model.
+  ollama:
+    image: ollama/ollama:latest
+    container_name: pethug-ollama
+    restart: unless-stopped
+    ports:
+      # Published: the Spring Boot API runs on the host and calls it here.
+      - "0.0.0.0:11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks: [pet-network]
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "ollama serve &
+       server=$$!;
+       until ollama list >/dev/null 2>&1; do sleep 1; done;
+       if ollama list | grep -q 'gemma3:1b'; then
+         echo '[pethug] Model gemma3:1b already present.';
+       else
+         echo '[pethug] Pulling gemma3:1b (first run only, ~800 MB)...';
+         if ollama pull gemma3:1b; then echo '[pethug] Model ready.'; else echo '[pethug] Pull FAILED - the chat will answer that it is unavailable. Restart this container to retry.'; fi;
+       fi;
+       wait $$server"
+
+volumes:
+  mysql-data:
+  keycloak-db-data:
+  ollama-data:
+
+networks:
+  pet-network:
+    driver: bridge

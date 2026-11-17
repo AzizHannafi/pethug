@@ -1,0 +1,15 @@
+.chat-container {
+    height: calc(100vh - 75px);
+}
+.chat-desc,
+.chat-input {
+    border: 1px solid rgb(228 228 231);
+}
+.chat-desc {
+    border-block: none;
+    max-height: calc(-155px + 100vh);
+}
+button:disabled {
+    opacity: .7;
+    cursor: not-allowed;
+}

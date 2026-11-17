@@ -1,0 +1,94 @@
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Pet Care Blog</h1>
+        <p class="text-gray-600">Tips, guides, and stories about pet care and adoption</p>
+      </div>
+
+      <div class="card p-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <input
+              id="search"
+              type="text"
+              [(ngModel)]="searchTerm"
+              (input)="applyFilters()"
+              class="input-field"
+              placeholder="Search by title, content, author, or tags..."
+            />
+          </div>
+          
+          <div>
+            <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort by</label>
+            <select
+              id="sort"
+              [(ngModel)]="sortBy"
+              (change)="applyFilters()"
+              class="input-field"
+            >
+              <option value="newest">Most Recent</option>
+              <option value="most-liked">Most Liked</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <p class="text-gray-600">Showing {{ blogPosts.length }} posts</p>
+      </div>
+
+      @if(blogPosts.length != 0) {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <article *ngFor="let post of blogPosts" class="card p-6">
+            <img
+              [src]="post.imageUrl"
+              [alt]="post.title"
+              class="w-full h-48 object-cover rounded-lg mb-4"
+            />
+            
+            <div class="space-y-3">
+              <div class="flex flex-wrap gap-2">
+                <span *ngFor="let tag of post.tags" class="bg-primary-50 text-primary-600 px-2 py-1 rounded text-xs font-medium">
+                  {{ tag }}
+                </span>
+              </div>
+              
+              <h2 class="text-xl font-semibold text-gray-900 line-clamp-2">{{ post.title }}</h2>
+              
+              <div class="flex items-center justify-between text-sm text-gray-500">
+                <span>By {{ post.author }}</span>
+                <span>{{ post.datePublished | date:'mediumDate' }}</span>
+              </div>
+              
+              <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <div class="flex items-center space-x-4">
+                  <button
+                    class="flex items-center space-x-1 text-gray-500 hover:text-red-500 disabled:opacity-50"
+                  >
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+                    </svg>
+                    <span class="text-sm">{{ post.likes }}</span>
+                  </button>
+                  <span class="text-gray-400">•</span>
+                  <span class="text-sm text-gray-500">{{ post.comments.length }} comments</span>
+                </div>
+                <a [routerLink]="['/blogs/details', post.id]" class="text-primary-500 hover:text-primary-600 font-medium text-sm">
+                  Read More
+                </a>
+              </div>
+            </div>
+          </article>
+        </div>
+      }
+      @else {
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No posts found</h3>
+        <p class="mt-1 text-sm text-gray-500">Try adjusting your search criteria.</p>
+      </div>
+      }
+
+    </div>

@@ -1,0 +1,103 @@
+   <div class="chat-container bg-white flex flex-col">
+      <div class="flex-1 max-w-4xl mx-auto w-full flex flex-col">
+
+        @if (messages.length != 0) {
+          <div class="flex-1 chat-desc p-4 space-y-4 overflow-y-auto">
+
+            @for (message of messages; track $index) {
+
+
+              @switch (message.role) {
+                @case ("agent") {
+                  <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-gray-900 text-sm font-medium">
+                      AI
+                    </div>
+                    <div class="flex-1">
+                      <div class="bg-white rounded-lg p-3 shadow-sm border">
+                        <p class="text-gray-800" [innerHTML]="message.safeContent"></p>
+                        <!-- <p class="text-gray-800"> {{message.content}} </p> -->
+                      </div>
+                      <span class="text-xs text-gray-500 mt-1 block">{{message.timestamp}} </span>
+                    </div>
+                  </div>
+                }
+                @case ("user") {
+                    <div class="flex items-start space-x-3 justify-end">
+                      <div class="flex-1 text-right">
+                        <div class="bg-primary-500 text-white rounded-lg p-3 shadow-sm inline-block max-w-xs">
+                          <p>{{message.content}}</p>
+                        </div>
+                        <span class="text-xs text-gray-500 mt-1 block">{{message.timestamp}} </span>
+                      </div>
+                      <div class="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                        U
+                      </div>
+                    </div>
+                }
+              }
+
+            }
+            <div
+              *ngIf="isLoading"
+            class="flex items-start space-x-3">
+                  <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-gray-900 text-sm font-medium">
+                    AI
+                  </div>
+                  <div class="flex-1">
+                    <div class="bg-white rounded-lg p-3 shadow-sm border">
+                      <div class="flex space-x-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce "
+                          style="animation-delay: 0.1s;"
+                        ></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" 
+                        style="animation-delay: 0.2s;"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+            </div>     
+
+  
+          </div>
+
+        } @else { 
+
+          <!-- <p class="flex-1 chat-desc p-4 space-y-4">empty !</p> -->
+          <div class="flex-1 flex flex-col items-center justify-center chat-desc p-4 space-y-4">
+              <div>
+                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mb-4">
+                    <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      AI
+                    </div>
+                </div>
+                  <h2 class="text-2xl font-semibold text-gray-800 mb-2">Welcome to AI Chat</h2>
+                  <p class="text-gray-600 mb-6 max-w-md">
+                    Start a conversation with your AI assistant. Ask questions, get help, or just chat!
+                  </p>
+
+              </div>
+          </div>
+        }
+
+
+        <div class="bg-white chat-input p-4">
+          <div class="flex space-x-3">
+            <input
+              [(ngModel)]="newMessage"
+              type="text"
+              placeholder="Type your message here..."
+              class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 "
+            />
+            <button
+              class="bg-primary-500 text-white px-6 py-2 rounded-lg"
+              [disabled]="newMessage.trim().length == 0"
+              (click)="sendMessage()"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>

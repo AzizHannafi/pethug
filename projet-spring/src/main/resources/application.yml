@@ -1,0 +1,98 @@
+application:
+  swagger:
+    title: PET-HUG API DESCRIPTION
+    description: "PetHug Api"
+    url: ${APP_PUBLIC_URL:http://localhost:8086}/api
+  # Origin patterns allowed to call the API directly (dev mode: ng serve on 4200).
+  # In the Docker stack the front-end proxies /api, so CORS is not even involved.
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*}
+
+server:
+  port: 8086
+
+spring:
+  application:
+    name: pet-hug-api
+  main:
+    # spring-ai brings WebFlux along: without this, a classpath missing Tomcat
+    # would silently start a reactive context instead of failing clearly.
+    web-application-type: servlet
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/petsdb?useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:root}
+    # Defaults match the MySQL service in docker-compose.yml, so running the API
+    # on your machine against the Docker stack needs no environment variable.
+    password: ${DB_PASSWORD:root}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Must match the "iss" claim of the tokens the browser receives.
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/pet}
+          # May point at an internal address (service name inside Docker).
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8080/realms/pet/protocol/openid-connect/certs}
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      init:
+        pull-model-strategy: never
+      chat:
+        options:
+          model: "${OLLAMA_MODEL:gemma3:1b}"
+
+jwt:
+  auth:
+    converter:
+      # Keycloak client whose resource_access roles are mapped to Spring authorities.
+      resource-id: ${KEYCLOAK_RESOURCE_ID:pet-hug-front}
+      principle-attribute: preferred_username
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    db:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    org:
+      springframework:
+        web: ERROR
+        security: INFO
+      hibernate: ERROR
+
+springdoc:
+  api-docs:
+    groups:
+      enabled: true
+    enabled: true
+  show-actuator: false
+  swagger-ui:
+    enabled: true
+    defaultModelsExpandDepth: -1
+    operationsSorter: method
+    oauth:
+      clientId: ${KEYCLOAK_RESOURCE_ID:pet-hug-front}
+      use-pkce-with-authorization-code-grant: true
+    disable-swagger-default-url: true
+  oAuthFlow:
+    authorizationUrl: ${KEYCLOAK_AUTH_URL:http://localhost:8080/realms/pet/protocol/openid-connect/auth}
+    tokenUrl: ${KEYCLOAK_TOKEN_URL:http://localhost:8080/realms/pet/protocol/openid-connect/token}

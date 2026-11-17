@@ -1,0 +1,8 @@
+{
+  "apiUrl": "/api",
+  "keycloak": {
+    "url": "http://localhost:8080",
+    "realm": "pet",
+    "clientId": "pet-hug-front"
+  }
+}

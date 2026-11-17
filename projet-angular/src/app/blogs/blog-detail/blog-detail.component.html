@@ -1,0 +1,151 @@
+    <div *ngIf="blogPost" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Blog Post -->
+      <article class="card p-8 mb-8">
+        <div class="mb-6">
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex flex-wrap gap-2">
+              <span *ngFor="let tag of blogPost.tags" class="bg-primary-50 text-primary-600 px-3 py-1 rounded-full text-sm font-medium">
+                {{ tag }}
+              </span>
+            </div>
+            
+            <!-- Report Button -->
+            <button
+              (click)="showReportModal = true"
+              class="text-red-500 hover:text-red-700 text-sm font-medium"
+            >
+              Report
+            </button>
+          </div>
+        </div>
+        
+        <img
+          [src]="blogPost.imageUrl"
+          [alt]="blogPost.title"
+          class="w-full h-64 object-cover rounded-lg mb-6"
+        />
+        
+        <div class="prose max-w-none">
+          <div class="text-gray-700 leading-relaxed whitespace-pre-line">{{ blogPost.content }}</div>
+        </div>
+        
+        <div class="flex items-center justify-between pt-6 border-t border-gray-200 mt-8">
+          <button
+           (click)="likeBlogPost()"
+            class="flex items-center space-x-2 text-gray-500 hover:text-red-500 disabled:opacity-50"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+            </svg>
+            <span>{{ blogPost.likes }} likes</span>
+          </button>
+        </div>
+      </article>
+
+      <!-- Comments Section -->
+      <div class="card p-8">
+        <h3 class="text-xl font-semibold text-gray-900 mb-6">Comments ({{ blogPost.comments.length }})</h3>
+        
+        <!-- Add Comment Form -->
+        <div class="mb-8">
+          <form  (ngSubmit)="addComment()" #commentForm="ngForm">
+            <div class="space-y-4">
+              <textarea
+                [(ngModel)]="newComment"
+                name="comment"
+                required
+                rows="3"
+                class="input-field"
+                placeholder="Write a comment..."
+              ></textarea>
+              <button
+                type="submit"
+                [disabled]="!commentForm.form.valid || isSubmitting"
+                class="btn-primary disabled:opacity-50"
+              >
+                {{ isSubmitting ? 'Posting...' : 'Post Comment' }}
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Comments List -->
+        <div class="space-y-6">
+          <div *ngFor="let comment of blogPost.comments" class="border-b border-gray-200 pb-6 last:border-b-0">
+            <div class="flex items-start space-x-3">
+              <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <span class="text-sm font-medium text-gray-600">{{ comment.userName.charAt(0) }}</span>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-1">
+                  <span class="font-medium text-gray-900">{{ comment.userName }}</span>
+                  <span class="text-sm text-gray-500">{{ comment.datePosted | date:'short' }}</span>
+                </div>
+                <p class="text-gray-700">{{ comment.content }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="blogPost.comments.length === 0" class="text-center py-8 text-gray-500">
+            No comments yet. Be the first to comment!
+          </div>
+        </div>
+      </div>
+    </div>
+        <!-- Report Modal -->
+    <div *ngIf="showReportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Report Blog Post</h3>
+        <form (ngSubmit)="submitReport()" #reportForm="ngForm">
+          <div class="space-y-4">
+            <div>
+              <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+              <select
+                id="reason"
+                name="reason"
+                required
+                [(ngModel)]="reportReason"
+                class="input-field"
+              >
+                <option value="">Select a reason</option>
+                <option value="inappropriate">Inappropriate content</option>
+                <option value="spam">Spam</option>
+                <option value="misinformation">Misinformation</option>
+                <option value="harassment">Harassment</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                id="description"
+                name="description"
+                required
+                rows="3"
+                [(ngModel)]="reportDescription"
+                class="input-field"
+                placeholder="Please provide more details..."
+              ></textarea>
+            </div>
+          </div>
+          
+          <div class="flex justify-end space-x-3 mt-6">
+            <button
+              type="button"
+              (click)="showReportModal = false"
+              class="px-4 py-2 text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="!reportForm.form.valid"
+              class="btn-primary disabled:opacity-50"
+            >
+              {{ 'Submit Report' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
