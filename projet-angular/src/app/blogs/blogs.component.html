@@ -1,94 +1,166 @@
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Pet Care Blog</h1>
-        <p class="text-gray-600">Tips, guides, and stories about pet care and adoption</p>
-      </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      <div class="card p-6 mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-            <input
-              id="search"
-              type="text"
-              [(ngModel)]="searchTerm"
-              (input)="applyFilters()"
-              class="input-field"
-              placeholder="Search by title, content, author, or tags..."
-            />
-          </div>
-          
-          <div>
-            <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort by</label>
-            <select
-              id="sort"
-              [(ngModel)]="sortBy"
-              (change)="applyFilters()"
-              class="input-field"
-            >
-              <option value="newest">Most Recent</option>
-              <option value="most-liked">Most Liked</option>
-            </select>
-          </div>
+  <!-- Heading -->
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Blog</h1>
+      <p class="mt-1 text-gray-600">Advice and stories from the community.</p>
+    </div>
+    <button (click)="write()"
+            class="px-4 py-2.5 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700
+                   transition shadow-sm">
+      Write a post
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="md:col-span-2">
+        <label for="search" class="block text-sm font-medium text-gray-700 mb-1.5">Search</label>
+        <div class="relative">
+          <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none"
+               stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+          </svg>
+          <input id="search" type="text" [(ngModel)]="searchTerm" (input)="applyFilters()"
+                 placeholder="Title, content, author…"
+                 class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 focus:border-primary-500
+                        focus:ring-2 focus:ring-primary-100 outline-none transition"/>
         </div>
       </div>
 
-      <div class="mb-6">
-        <p class="text-gray-600">Showing {{ blogPosts.length }} posts</p>
+      <div>
+        <label for="sort" class="block text-sm font-medium text-gray-700 mb-1.5">Sort by</label>
+        <select id="sort" [(ngModel)]="sortBy" (change)="applyFilters()"
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:border-primary-500
+                       focus:ring-2 focus:ring-primary-100 outline-none transition bg-white">
+          <option value="newest">Most recent</option>
+          <option value="most-liked">Most liked</option>
+        </select>
       </div>
+    </div>
 
-      @if(blogPosts.length != 0) {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <article *ngFor="let post of blogPosts" class="card p-6">
-            <img
-              [src]="post.imageUrl"
-              [alt]="post.title"
-              class="w-full h-48 object-cover rounded-lg mb-4"
-            />
-            
-            <div class="space-y-3">
-              <div class="flex flex-wrap gap-2">
-                <span *ngFor="let tag of post.tags" class="bg-primary-50 text-primary-600 px-2 py-1 rounded text-xs font-medium">
-                  {{ tag }}
-                </span>
+    @if (hasFilters) {
+      <div class="mt-4 pt-4 border-t border-gray-100 flex items-center gap-3">
+        <p class="text-sm text-gray-600">
+          <span class="font-semibold text-gray-900">{{ blogPosts.length }}</span>
+          result{{ blogPosts.length === 1 ? '' : 's' }}
+        </p>
+        <button (click)="clearFilters()" class="text-sm font-medium text-primary-600 hover:underline">
+          Clear search
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="h-48 bg-gray-100 animate-pulse"></div>
+          <div class="p-5 space-y-3">
+            <div class="h-5 bg-gray-100 rounded animate-pulse w-3/4"></div>
+            <div class="h-3 bg-gray-100 rounded animate-pulse w-1/2"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (blogPosts.length) {
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (post of blogPosts; track post.id) {
+        <article class="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col
+                        hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+
+          <div class="relative">
+            <a [routerLink]="['/blogs/details', post.id]" class="block">
+              <img [src]="post.imageUrl || 'favicon.ico'" [alt]="post.title"
+                   class="w-full h-48 object-cover bg-gray-100"/>
+            </a>
+
+            <!-- Only shown when it is not simply published, so the page stays calm. -->
+            @if (post.status !== 'approved') {
+              <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-semibold shadow-sm"
+                    [class]="statusClass(post.status)">{{ statusLabel(post.status) }}</span>
+            }
+            @if (isMine(post)) {
+              <span class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-semibold
+                           bg-primary-600 text-white shadow-sm">Yours</span>
+            }
+          </div>
+
+          <div class="p-5 flex flex-col flex-1">
+            @if (post.tags && post.tags.length) {
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                @for (tag of post.tags; track tag) {
+                  <span class="bg-primary-50 text-primary-700 px-2 py-0.5 rounded text-[11px] font-medium">
+                    {{ tag }}
+                  </span>
+                }
               </div>
-              
-              <h2 class="text-xl font-semibold text-gray-900 line-clamp-2">{{ post.title }}</h2>
-              
-              <div class="flex items-center justify-between text-sm text-gray-500">
-                <span>By {{ post.author }}</span>
-                <span>{{ post.datePublished | date:'mediumDate' }}</span>
+            }
+
+            <h2 class="text-lg font-semibold text-gray-900 leading-snug line-clamp-2">
+              <a [routerLink]="['/blogs/details', post.id]" class="hover:text-primary-600 transition">
+                {{ post.title }}
+              </a>
+            </h2>
+
+            <p class="mt-2 text-sm text-gray-600 line-clamp-2 flex-1">{{ post.content }}</p>
+
+            <div class="mt-3 flex items-center justify-between text-sm text-gray-500">
+              <span class="truncate">By {{ post.author }}</span>
+              <span class="shrink-0">{{ post.datePublished | date:'mediumDate' }}</span>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 mt-4 border-t border-gray-100">
+              <div class="flex items-center gap-3">
+                <button (click)="like(post, $event)" [disabled]="isLiking(post)"
+                        class="flex items-center gap-1 text-gray-500 hover:text-red-500 disabled:opacity-50
+                               transition group" [attr.aria-label]="'Like ' + post.title">
+                  <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+                  </svg>
+                  <span class="text-sm font-medium">{{ post.likes }}</span>
+                </button>
+                <span class="text-sm text-gray-500">{{ post.comments.length }} comment{{ post.comments.length === 1 ? '' : 's' }}</span>
               </div>
-              
-              <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                <div class="flex items-center space-x-4">
-                  <button
-                    class="flex items-center space-x-1 text-gray-500 hover:text-red-500 disabled:opacity-50"
-                  >
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
-                    </svg>
-                    <span class="text-sm">{{ post.likes }}</span>
-                  </button>
-                  <span class="text-gray-400">•</span>
-                  <span class="text-sm text-gray-500">{{ post.comments.length }} comments</span>
-                </div>
-                <a [routerLink]="['/blogs/details', post.id]" class="text-primary-500 hover:text-primary-600 font-medium text-sm">
-                  Read More
-                </a>
+
+              <div class="flex items-center gap-2">
+                @if (canManage(post)) {
+                  <button (click)="edit(post, $event)"
+                          class="text-sm font-medium text-gray-600 hover:text-gray-900 transition">Edit</button>
+                }
+                <a [routerLink]="['/blogs/details', post.id]"
+                   class="text-sm font-semibold text-primary-600 hover:text-primary-700 transition">Read</a>
               </div>
             </div>
-          </article>
-        </div>
+          </div>
+        </article>
       }
-      @else {
-      <div class="text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">No posts found</h3>
-        <p class="mt-1 text-sm text-gray-500">Try adjusting your search criteria.</p>
-      </div>
-      }
-
     </div>
+
+  } @else {
+    <div class="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <h3 class="mt-3 text-lg font-semibold text-gray-900">No post yet</h3>
+      <p class="mt-1 text-gray-600">
+        {{ hasFilters ? 'Try another search.' : 'Be the first to share something.' }}
+      </p>
+      @if (hasFilters) {
+        <button (click)="clearFilters()"
+                class="mt-5 px-5 py-2.5 rounded-lg border border-gray-300 font-medium text-gray-700
+                       hover:bg-gray-50 transition">Clear search</button>
+      } @else {
+        <button (click)="write()"
+                class="mt-5 px-5 py-2.5 rounded-lg bg-primary-600 text-white font-medium
+                       hover:bg-primary-700 transition">Write a post</button>
+      }
+    </div>
+  }
+</div>

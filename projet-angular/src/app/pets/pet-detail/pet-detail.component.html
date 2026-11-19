@@ -1,10 +1,32 @@
    <div *ngIf="pet" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
      <!-- Pet Details -->
+     <!-- Owner bar: only for whoever published this listing, or an administrator.
+          The API enforces the same rule, this just avoids offering a dead end. -->
+     @if (canManage) {
+       <div class="rounded-xl border border-primary-200 bg-primary-50 p-4 mb-6
+                   flex flex-wrap items-center justify-between gap-3">
+         <div class="flex items-center gap-2.5">
+           <svg class="w-5 h-5 text-primary-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+             <path stroke-linecap="round" stroke-linejoin="round"
+                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+           </svg>
+           <p class="text-sm font-medium text-primary-900">
+             {{ isMine ? 'You published this listing.' : 'You are an administrator.' }}
+             You can edit or remove it.
+           </p>
+         </div>
+         <div class="flex items-center gap-2">
+           <button (click)="edit()"
+                   class="px-3.5 py-2 rounded-lg text-sm font-medium bg-white text-gray-700
+                          border border-gray-300 hover:bg-gray-50 transition">Edit</button>
+           <button (click)="showDeleteModal = true"
+                   class="px-3.5 py-2 rounded-lg text-sm font-medium text-red-600 bg-white
+                          border border-red-200 hover:bg-red-50 transition">Delete</button>
+         </div>
+       </div>
+     }
+
      <div class="card p-8 mb-8">
-        <!-- <div class="text-right  px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-          <a class="text-blue-600 hover:text-blue-900" [routerLink]="['/pets', pet.id]">Edit</a>
-          <button class="text-red-600 hover:text-red-900">Delete</button>
-        </div> -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
             <img
@@ -190,3 +212,24 @@
         </form>
       </div>
 </div>
+<!-- Delete confirmation -->
+@if (showDeleteModal && pet) {
+  <div class="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4" (click)="showDeleteModal = false">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
+      <h2 class="text-lg font-bold text-gray-900">Delete this listing?</h2>
+      <p class="mt-2 text-gray-600">
+        "{{ pet.name }}" will be removed for good, along with its comments. This cannot be undone.
+      </p>
+      <div class="mt-6 flex justify-end gap-2">
+        <button (click)="showDeleteModal = false"
+                class="px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition">
+          Cancel
+        </button>
+        <button (click)="confirmDelete()"
+                class="px-4 py-2 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 transition">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+}

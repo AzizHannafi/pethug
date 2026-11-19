@@ -1,106 +1,192 @@
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Available Pets</h1>
-        <p class="text-gray-600">Find your perfect companion</p>
-      </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      <div class="card p-6 mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-            <input
-              id="search"
-              type="text"
-              [(ngModel)]="searchTerm"
-              (input)="applyFilters()"
-              class="input-field"
-              placeholder="Search by name, breed, type..."
-            />
-          </div>
-          
-          <div>
-            <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort by</label>
-            <select
-              id="sort"
-              [(ngModel)]="sortBy"
-              (change)="applyFilters()"
-              class="input-field"
-            >
-              <option value="newest">Most Recent</option>
-              <option value="most-liked">Most Liked</option>
-            </select>
-          </div>
+  <!-- Heading -->
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Available pets</h1>
+      <p class="mt-1 text-gray-600">Find your perfect companion.</p>
+    </div>
+    <button (click)="publish()"
+            class="px-4 py-2.5 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700
+                   transition shadow-sm">
+      Publish a listing
+    </button>
+  </div>
 
-          <div>
-            <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Pet Type</label>
-            <select
-              id="type"
-              [(ngModel)]="typeFilter"
-              (change)="applyFilters()"
-              class="input-field"
-            >
-              <option value="">All Types</option>
-              <option value="dog">Dogs</option>
-              <option value="cat">Cats</option>
-              <option value="bird">Birds</option>
-              <option value="rabbit">Rabbits</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
+  <!-- Filters -->
+  <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label for="search" class="block text-sm font-medium text-gray-700 mb-1.5">Search</label>
+        <div class="relative">
+          <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none"
+               stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+          </svg>
+          <input id="search" type="text" [(ngModel)]="searchTerm" (input)="applyFilters()"
+                 placeholder="Name, breed, city…"
+                 class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 focus:border-primary-500
+                        focus:ring-2 focus:ring-primary-100 outline-none transition"/>
         </div>
       </div>
 
-      <div class="mb-6">
-        <p class="text-gray-600">Showing {{ pets.length }} pets</p>
+      <div>
+        <label for="type" class="block text-sm font-medium text-gray-700 mb-1.5">Species</label>
+        <select id="type" [(ngModel)]="typeFilter" (change)="applyFilters()"
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:border-primary-500
+                       focus:ring-2 focus:ring-primary-100 outline-none transition bg-white">
+          <option value="">All species</option>
+          <option value="dog">Dogs</option>
+          <option value="cat">Cats</option>
+          <option value="bird">Birds</option>
+          <option value="rabbit">Rabbits</option>
+          <option value="other">Other</option>
+        </select>
       </div>
 
+      <div>
+        <label for="sort" class="block text-sm font-medium text-gray-700 mb-1.5">Sort by</label>
+        <select id="sort" [(ngModel)]="sortBy" (change)="applyFilters()"
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:border-primary-500
+                       focus:ring-2 focus:ring-primary-100 outline-none transition bg-white">
+          <option value="newest">Most recent</option>
+          <option value="most-liked">Most liked</option>
+        </select>
+      </div>
+    </div>
 
-      @if (pets.length !=0) {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <div *ngFor="let pet of pets" class="card p-6">
-            <img
-              [src]="pet.imageUrl"
-              [alt]="pet.name"
-              class="w-full h-48 object-cover rounded-lg mb-4"
-            />
-            
-            <div class="space-y-3">
-              <div class="flex justify-between items-start">
-                <h3 class="text-lg font-semibold text-gray-900">{{ pet.name }}</h3>
+    @if (hasFilters) {
+      <div class="mt-4 pt-4 border-t border-gray-100 flex items-center gap-3">
+        <p class="text-sm text-gray-600">
+          <span class="font-semibold text-gray-900">{{ pets.length }}</span>
+          result{{ pets.length === 1 ? '' : 's' }}
+        </p>
+        <button (click)="clearFilters()" class="text-sm font-medium text-primary-600 hover:underline">
+          Clear filters
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      @for (i of [1,2,3,4,5,6,7,8]; track i) {
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="h-48 bg-gray-100 animate-pulse"></div>
+          <div class="p-5 space-y-3">
+            <div class="h-4 bg-gray-100 rounded animate-pulse w-1/2"></div>
+            <div class="h-3 bg-gray-100 rounded animate-pulse w-3/4"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (pets.length) {
+
+    <p class="text-sm text-gray-600 mb-4">
+      Showing <span class="font-semibold text-gray-900">{{ pets.length }}</span>
+      pet{{ pets.length === 1 ? '' : 's' }}
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      @for (pet of pets; track pet.id) {
+        <article class="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col
+                        hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+
+          <div class="relative">
+            <a [routerLink]="['/pets/details', pet.id]" class="block">
+              <img [src]="pet.imageUrl || 'favicon.ico'" [alt]="pet.name"
+                   class="w-full h-48 object-cover bg-gray-100"/>
+            </a>
+
+            <!-- Species -->
+            <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-semibold
+                         bg-white/95 text-gray-700 capitalize shadow-sm">{{ pet.type }}</span>
+
+            <!-- Yours -->
+            @if (isMine(pet)) {
+              <span class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-semibold
+                           bg-primary-600 text-white shadow-sm">Yours</span>
+            }
+          </div>
+
+          <div class="p-5 flex flex-col flex-1">
+            <div class="flex items-start justify-between gap-2">
+              <h3 class="text-lg font-semibold text-gray-900 leading-tight">{{ pet.name }}</h3>
+              @if (pet.isVaccinated) {
+                <span title="Vaccinated" class="shrink-0 text-emerald-600">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-.34-.014-.675-.042-1.007z"/>
+                  </svg>
+                </span>
+              }
+            </div>
+
+            <p class="mt-1 text-sm text-gray-600">
+              {{ pet.breed }} · {{ pet.age }} year{{ pet.age === 1 ? '' : 's' }}
+            </p>
+
+            @if (pet.location) {
+              <p class="mt-1 text-sm text-gray-500 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                {{ pet.location }}
+              </p>
+            }
+
+            <p class="mt-2 text-sm text-gray-600 line-clamp-2 flex-1">{{ pet.description }}</p>
+
+            <div class="flex items-center justify-between pt-4 mt-4 border-t border-gray-100">
+              <div class="flex items-center gap-3">
+                <button (click)="like(pet, $event)" [disabled]="isLiking(pet)"
+                        class="flex items-center gap-1 text-gray-500 hover:text-red-500 disabled:opacity-50
+                               transition group" [attr.aria-label]="'Like ' + pet.name">
+                  <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+                  </svg>
+                  <span class="text-sm font-medium">{{ pet.likes }}</span>
+                </button>
+
+                <span class="text-sm text-gray-500">{{ pet.comments.length }} comment{{ pet.comments.length === 1 ? '' : 's' }}</span>
               </div>
-              
-              <p class="text-gray-600 text-sm">{{ pet.breed }} • {{ pet.age }} years old</p>
-              <p class="text-gray-600 text-sm line-clamp-2">{{ pet.description }}</p>
-              
-              <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                <div class="flex items-center space-x-4">
-                  <button
-                    class="flex items-center space-x-1 text-gray-500 hover:text-red-500 disabled:opacity-50"
-                  >
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
-                    </svg>
-                    <span class="text-sm">{{ pet.likes }}</span>
-                  </button>
-                  <span class="text-gray-400">•</span>
-                  <span class="text-sm text-gray-500">{{ pet.comments.length }} comments</span>
-                </div>
-                <a [routerLink]="['/pets/details', pet.id]" class="text-primary-500 hover:text-primary-600 font-medium text-sm">
-                  View Details
-                </a>
+
+              <div class="flex items-center gap-2">
+                @if (canManage(pet)) {
+                  <button (click)="edit(pet, $event)"
+                          class="text-sm font-medium text-gray-600 hover:text-gray-900 transition">Edit</button>
+                }
+                <a [routerLink]="['/pets/details', pet.id]"
+                   class="text-sm font-semibold text-primary-600 hover:text-primary-700 transition">Details</a>
               </div>
             </div>
           </div>
-        </div>
+        </article>
       }
-      @else { 
-      <div class="text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">No pets found</h3>
-        <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
-      </div>
-      }
-
     </div>
+
+  } @else {
+    <div class="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9.172 16.172a4 4 0 015.656 0M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <h3 class="mt-3 text-lg font-semibold text-gray-900">No pet matches</h3>
+      <p class="mt-1 text-gray-600">
+        {{ hasFilters ? 'Try widening your search.' : 'Be the first to publish a listing.' }}
+      </p>
+      @if (hasFilters) {
+        <button (click)="clearFilters()"
+                class="mt-5 px-5 py-2.5 rounded-lg border border-gray-300 font-medium text-gray-700
+                       hover:bg-gray-50 transition">Clear filters</button>
+      } @else {
+        <button (click)="publish()"
+                class="mt-5 px-5 py-2.5 rounded-lg bg-primary-600 text-white font-medium
+                       hover:bg-primary-700 transition">Publish a listing</button>
+      }
+    </div>
+  }
+</div>
