@@ -30,7 +30,11 @@ public class Blog {
     @Column(columnDefinition = "LONGTEXT")
     private String imageUrl;
 
+    /** Display name of the author. */
     private String author;
+
+    /** Keycloak user id of the author. Set by the server. */
+    private String authorId;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date datePublished;

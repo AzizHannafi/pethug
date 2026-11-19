@@ -43,6 +43,11 @@ export class PetService {
     return this.pets$;
   }
 
+  /** The listings published by the signed-in user. */
+  getMyPets(): Observable<Pet[]> {
+    return this.http.get<Pet[]>(`${this.baseUrl}/me`);
+  }
+
   /** Always hits the API, so a deep link / page refresh works. */
   getPetById(id: number): Observable<Pet> {
     return this.http.get<Pet>(`${this.baseUrl}/${id}`);
@@ -105,7 +110,8 @@ export class PetService {
     );
   }
 
-  addComment(petId: number, comment: Comment): Observable<Pet> {
+  /** userId / userName are set by the server from the token, not sent. */
+  addComment(petId: number, comment: Partial<Comment>): Observable<Pet> {
     return this.http.post<Pet>(`${this.baseUrl}/${petId}/comments`, comment).pipe(
       tap(() => this.refresh().subscribe())
     );

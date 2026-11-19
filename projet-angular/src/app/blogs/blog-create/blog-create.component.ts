@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { BlogPost } from '../../types/interface';
 import { BlogService } from '../../services/blog.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-blog-create',
@@ -28,7 +29,8 @@ export class BlogCreateComponent  implements OnInit {
   constructor(
     private blogService: BlogService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private notifications: NotificationService
   ){}
 
   ngOnInit(): void {
@@ -64,10 +66,14 @@ export class BlogCreateComponent  implements OnInit {
     request$.subscribe({
       next: () => {
         this.isSubmitting = false;
-        this.router.navigate(['/admin/blogs']);
+        this.notifications.success(
+          this.isEditing ? 'Post updated' : 'Post submitted',
+          'A moderator reviews it before it becomes public.'
+        );
+        this.router.navigate(['/account']);
       },
-      error: err => {
-        console.error('Failed to save blog post', err);
+      error: () => {
+        // The interceptor already explained the refusal.
         this.isSubmitting = false;
       }
     });
@@ -88,7 +94,7 @@ export class BlogCreateComponent  implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/admin/blogs']);
+    this.router.navigate(['/account']);
   }
 
   removeImage(): void {

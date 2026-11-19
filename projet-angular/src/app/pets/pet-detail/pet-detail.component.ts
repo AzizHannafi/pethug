@@ -34,13 +34,6 @@ export class PetDetailComponent {
     });
   }
 
-  private get currentUserName(): string {
-    const profile = this.keyCloakService.profile;
-    return [profile?.firstName, profile?.lastName].filter(Boolean).join(' ')
-      || profile?.username
-      || 'Anonymous';
-  }
-
   submitReport(): void {
     if (!this.pet) {
       return;
@@ -50,8 +43,6 @@ export class PetDetailComponent {
       type: 'pet',
       itemId: this.pet.id,
       itemTitle: this.pet.name,
-      reporterId: this.keyCloakService.profile?.id ?? '',
-      reporterName: this.currentUserName,
       reason: this.reportReason,
       description: this.reportDescription
     }).subscribe({
@@ -84,12 +75,8 @@ export class PetDetailComponent {
 
     this.isSubmitting = true;
 
-    const comment = {
-      userId: this.keyCloakService.profile?.id ?? '',
-      userName: this.currentUserName,
-      content: this.newComment,
-      datePosted: new Date()
-    } as Comment;
+    // The server stamps the author and the date from the token.
+    const comment = { content: this.newComment };
 
     this.petService.addComment(this.pet.id, comment).subscribe({
       next: pet => {

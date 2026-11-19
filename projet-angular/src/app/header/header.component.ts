@@ -8,21 +8,26 @@ import { KeycloackService } from '../services/keycloack.service';
   styleUrl: './header.component.css'
 })
 export class HeaderComponent {
-  
-  searchTerm = '';
 
   constructor(public keyCloakService: KeycloackService) {}
 
-  onSearch(): void {
-    // this.searchChanged.emit(this.searchTerm);
+  /** Two letters for the avatar, rather than a stock photo of a stranger. */
+  get initials(): string {
+    const profile = this.keyCloakService.profile;
+    const letters = [profile?.firstName, profile?.lastName]
+      .filter(Boolean)
+      .map(part => part!.charAt(0));
+    if (letters.length) {
+      return letters.join('').toUpperCase();
+    }
+    return (profile?.username ?? '?').charAt(0).toUpperCase();
   }
-
 
   logout(): void {
     this.keyCloakService.logout();
   }
 
-  modifyDetails() {
-    this.keyCloakService.keycloak.accountManagement()
+  modifyDetails(): void {
+    this.keyCloakService.keycloak.accountManagement();
   }
 }

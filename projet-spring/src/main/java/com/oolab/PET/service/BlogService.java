@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface BlogService {
     List<Blog> findAll();
+    List<Blog> findMine();
     Blog findById(Long id);
     Blog create(Blog blog);
     Blog update(Long id, Blog blog);

@@ -5,7 +5,6 @@ import com.oolab.PET.enity.Pet;
 import com.oolab.PET.service.PetService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,27 +25,30 @@ public class PetController {
         return petService.findAll();
     }
 
+    /** The listings published by the caller. */
+    @GetMapping("/me")
+    public List<Pet> getMine() {
+        return petService.findMine();
+    }
+
     @GetMapping("/{id}")
     public Pet getById(@PathVariable Long id) {
         return petService.findById(id);
     }
 
-    // Only administrators publish and curate pet listings.
-    @PreAuthorize("hasRole('client_admin')")
+    /** Anyone signed in may publish; the server records them as the owner. */
     @PostMapping
     public Pet create(@RequestBody Pet pet) {
         return petService.create(pet);
     }
 
-    // Only administrators edit a listing.
-    @PreAuthorize("hasRole('client_admin')")
+    /** Owner or administrator only - enforced in the service, 403 otherwise. */
     @PutMapping("/{id}")
     public Pet update(@PathVariable Long id, @RequestBody Pet pet) {
         return petService.update(id, pet);
     }
 
-    // Only administrators remove a listing.
-    @PreAuthorize("hasRole('client_admin')")
+    /** Owner or administrator only - enforced in the service, 403 otherwise. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         petService.delete(id);

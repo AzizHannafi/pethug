@@ -1,6 +1,9 @@
 export interface Pet {
   id: number;
   name: string;
+  /** Keycloak id of whoever published the listing. Set by the server. */
+  ownerId?: string;
+  ownerName?: string;
   type: 'dog' | 'cat' | 'bird' | 'rabbit' | 'other';
   breed: string;
   age: number;
@@ -24,6 +27,8 @@ export interface BlogPost {
   content: string;
   imageUrl: string;
   author: string;
+  /** Keycloak id of the author. Set by the server. */
+  authorId?: string;
   datePublished: Date;
   likes: number;
   comments: Comment[];

@@ -26,32 +26,37 @@ public class BlogController {
         return blogService.findAll();
     }
 
+    /** The posts written by the caller, whatever their moderation status. */
+    @GetMapping("/me")
+    public List<Blog> getMine() {
+        return blogService.findMine();
+    }
+
     @GetMapping("/{id}")
     public Blog getById(@PathVariable Long id) {
         return blogService.findById(id);
     }
 
+    /** Anyone signed in may publish; the post starts as "pending". */
     @PostMapping
     public Blog create(@RequestBody Blog blog) {
         return blogService.create(blog);
     }
 
-    // Only administrators edit someone else's post.
-    @PreAuthorize("hasRole('client_admin')")
+    /** Author or administrator only - enforced in the service, 403 otherwise. */
     @PutMapping("/{id}")
     public Blog update(@PathVariable Long id, @RequestBody Blog blog) {
         return blogService.update(id, blog);
     }
 
-    // Only administrators remove a post.
-    @PreAuthorize("hasRole('client_admin')")
+    /** Author or administrator only - enforced in the service, 403 otherwise. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         blogService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    // Moderation: administrators approve or reject.
+    // Moderation: approving your own post would defeat the purpose.
     @PreAuthorize("hasRole('client_admin')")
     @PutMapping("/{id}/status")
     public Blog updateStatus(@PathVariable Long id, @RequestParam String status) {

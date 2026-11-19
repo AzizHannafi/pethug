@@ -34,13 +34,6 @@ export class BlogDetailComponent {
     });
   }
 
-  private get currentUserName(): string {
-    const profile = this.keyCloakService.profile;
-    return [profile?.firstName, profile?.lastName].filter(Boolean).join(' ')
-      || profile?.username
-      || 'Anonymous';
-  }
-
   submitReport(): void {
     if (!this.blogPost) {
       return;
@@ -50,8 +43,6 @@ export class BlogDetailComponent {
       type: 'blog',
       itemId: this.blogPost.id,
       itemTitle: this.blogPost.title,
-      reporterId: this.keyCloakService.profile?.id ?? '',
-      reporterName: this.currentUserName,
       reason: this.reportReason,
       description: this.reportDescription
     }).subscribe({
@@ -84,12 +75,8 @@ export class BlogDetailComponent {
 
     this.isSubmitting = true;
 
-    const comment = {
-      userId: this.keyCloakService.profile?.id ?? '',
-      userName: this.currentUserName,
-      content: this.newComment,
-      datePosted: new Date()
-    } as Comment;
+    // The server stamps the author and the date from the token.
+    const comment = { content: this.newComment };
 
     this.blogService.addComment(this.blogPost.id, comment).subscribe({
       next: post => {

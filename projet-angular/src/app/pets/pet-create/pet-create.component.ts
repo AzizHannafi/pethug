@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Pet } from '../../types/interface';
 import { PetService } from '../../services/pet.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-pet-create',
@@ -35,7 +36,8 @@ export class PetCreateComponent implements OnInit {
   constructor(
     private petService: PetService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private notifications: NotificationService
   ){}
 
 
@@ -63,17 +65,21 @@ export class PetCreateComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.isSubmitting = false;
-        this.router.navigate(['/admin/pets']);
+        this.notifications.success(
+          this.isEditing ? 'Listing updated' : 'Listing published',
+          `${this.pet.name} is now in your space.`
+        );
+        this.router.navigate(['/account']);
       },
-      error: err => {
-        console.error('Failed to save pet', err);
+      error: () => {
+        // The interceptor already explained the refusal.
         this.isSubmitting = false;
       }
     });
   }
 
   onCancel(): void {
-    this.router.navigate(['/admin/pets']);
+    this.router.navigate(['/account']);
   }
 
   onImageFileSelected(event: any): void {

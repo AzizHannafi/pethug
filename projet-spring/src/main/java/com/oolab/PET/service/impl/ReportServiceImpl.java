@@ -3,6 +3,7 @@ package com.oolab.PET.service.impl;
 import com.oolab.PET.enity.Report;
 import com.oolab.PET.exception.ResourceNotFoundException;
 import com.oolab.PET.repository.ReportRepository;
+import com.oolab.PET.security.CurrentUser;
 import com.oolab.PET.service.ReportService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -15,9 +16,11 @@ import java.util.List;
 public class ReportServiceImpl implements ReportService {
 
     private final ReportRepository reportRepository;
+    private final CurrentUser currentUser;
 
-    public ReportServiceImpl(ReportRepository reportRepository) {
+    public ReportServiceImpl(ReportRepository reportRepository, CurrentUser currentUser) {
         this.reportRepository = reportRepository;
+        this.currentUser = currentUser;
     }
 
     @Override
@@ -26,10 +29,18 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
+    public List<Report> findMine() {
+        return reportRepository.findByReporterIdOrderByDateReportedDesc(currentUser.id());
+    }
+
+    @Override
     public Report create(Report report) {
         report.setId(null);
         report.setDateReported(new Date());
         report.setStatus("pending");
+        // The reporter is whoever is signed in, not whatever the client sent.
+        report.setReporterId(currentUser.id());
+        report.setReporterName(currentUser.displayName());
         return reportRepository.save(report);
     }
 

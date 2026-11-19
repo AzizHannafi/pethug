@@ -1,53 +1,99 @@
-    <header class="bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center py-4">
-          <!-- Logo and Brand -->
-          <div class="flex items-center space-x-3">
-            <div class="bg-primary-500 rounded-lg p-2">
-              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 2L3 7v11a1 1 0 001 1h3v-7a1 1 0 011-1h4a1 1 0 011 1v7h3a1 1 0 001-1V7l-7-5z"/>
-              </svg>
-            </div>
-            <div>
-              <h1 class="text-xl font-bold text-gray-900">PetHUG</h1>
-            </div>
-          </div>
+<header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b border-gray-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16 gap-4">
 
-          <!-- Navigation -->
-          <nav class="hidden md:flex items-center space-x-8">
-            <a routerLink="/home" class="text-gray-700 hover:text-primary-500 font-medium">Home</a>
-            <a routerLink="/pets" class="text-gray-700 hover:text-primary-500 font-medium">Pets</a>
-            <a routerLink="/blogs" class="text-gray-700 hover:text-primary-500 font-medium">Blog</a>
-            <a routerLink="/admin" class="text-gray-700 hover:text-primary-500 font-medium">Admin</a>
-          </nav>
+      <!-- Brand -->
+      <a routerLink="/home" class="flex items-center gap-2.5 shrink-0 group">
+        <div class="bg-primary-500 rounded-lg p-2 group-hover:scale-105 transition-transform">
+          <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 2L3 7v11a1 1 0 001 1h3v-7a1 1 0 011-1h4a1 1 0 011 1v7h3a1 1 0 001-1V7l-7-5z"/>
+          </svg>
+        </div>
+        <span class="text-lg font-bold text-gray-900 tracking-tight">PetHUG</span>
+      </a>
 
-          <!-- Search Bar -->
-          <div class="flex-1 max-w-md mx-8">
-          </div>
+      <!-- Navigation -->
+      <nav class="hidden md:flex items-center gap-1">
+        <a routerLink="/home" routerLinkActive="bg-primary-50 text-primary-700"
+           class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition">Home</a>
+        <a routerLink="/pets" routerLinkActive="bg-primary-50 text-primary-700"
+           class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition">Pets</a>
+        <a routerLink="/blogs" routerLinkActive="bg-primary-50 text-primary-700"
+           class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition">Blog</a>
+        <a routerLink="/account" routerLinkActive="bg-primary-50 text-primary-700"
+           class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition">My space</a>
 
-          <!-- User Actions -->
-          <div class="flex items-center space-x-4">
-              <div class="flex items-center space-x-3">
-                <img src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100" [alt]="" class="w-8 h-8 rounded-full">
-                <span class="text-gray-700 font-medium">{{  keyCloakService.profile?.firstName }} - {{  keyCloakService.profile?.lastName }}</span>
-                <a  title="chat"  routerLink="/chat" class="text-gray-500 hover:text-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
-                  </svg>
+        <!-- Administrators only: the API refuses these routes to anyone else. -->
+        @if (keyCloakService.isAdmin) {
+          <a routerLink="/admin" routerLinkActive="bg-amber-100 text-amber-800"
+             class="px-3 py-2 rounded-lg text-sm font-medium text-amber-700 hover:bg-amber-50 transition
+                    flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-.34-.014-.675-.042-1.007z"/>
+            </svg>
+            Admin
+          </a>
+        }
+      </nav>
 
-                </a>
-                <button (click)="modifyDetails()" class="text-gray-500 hover:text-gray-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
-                  </svg>
-                </button>
-                <button (click)="logout()" class="text-gray-500 hover:text-gray-700">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                  </svg>
-                </button>
-            </div>
+      <!-- User -->
+      <div class="flex items-center gap-1 shrink-0">
+
+        <a routerLink="/chat" title="Assistant"
+           routerLinkActive="bg-primary-50 text-primary-600"
+           class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+               stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/>
+          </svg>
+        </a>
+
+        <button (click)="modifyDetails()" title="My Keycloak account"
+                class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+               stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"/>
+          </svg>
+        </button>
+
+        <button (click)="logout()" title="Sign out"
+                class="p-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+        </button>
+
+        <div class="hidden sm:flex items-center gap-2.5 pl-2 ml-1 border-l border-gray-200">
+          <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-700 grid place-items-center
+                      text-xs font-bold select-none">{{ initials }}</div>
+          <div class="leading-tight">
+            <p class="text-sm font-medium text-gray-900">{{ keyCloakService.fullName }}</p>
+            <p class="text-[11px]" [class]="keyCloakService.isAdmin ? 'text-amber-600 font-semibold' : 'text-gray-500'">
+              {{ keyCloakService.isAdmin ? 'Administrator' : 'Member' }}
+            </p>
           </div>
         </div>
       </div>
-    </header>
+    </div>
+
+    <!-- Navigation, small screens -->
+    <nav class="md:hidden flex items-center gap-1 pb-2 -mt-1 overflow-x-auto">
+      <a routerLink="/home" routerLinkActive="bg-primary-50 text-primary-700"
+         class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 whitespace-nowrap">Home</a>
+      <a routerLink="/pets" routerLinkActive="bg-primary-50 text-primary-700"
+         class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 whitespace-nowrap">Pets</a>
+      <a routerLink="/blogs" routerLinkActive="bg-primary-50 text-primary-700"
+         class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 whitespace-nowrap">Blog</a>
+      <a routerLink="/account" routerLinkActive="bg-primary-50 text-primary-700"
+         class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 whitespace-nowrap">My space</a>
+      @if (keyCloakService.isAdmin) {
+        <a routerLink="/admin" routerLinkActive="bg-amber-100 text-amber-800"
+           class="px-3 py-1.5 rounded-lg text-sm font-medium text-amber-700 whitespace-nowrap">Admin</a>
+      }
+    </nav>
+  </div>
+</header>

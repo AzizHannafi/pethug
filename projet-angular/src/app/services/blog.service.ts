@@ -43,6 +43,11 @@ export class BlogService {
     return this.blogPosts$;
   }
 
+  /** The posts written by the signed-in user, whatever their status. */
+  getMyBlogPosts(): Observable<BlogPost[]> {
+    return this.http.get<BlogPost[]>(`${this.baseUrl}/me`);
+  }
+
   /** Always hits the API, so a deep link / page refresh works. */
   getBlogPostById(id: number): Observable<BlogPost> {
     return this.http.get<BlogPost>(`${this.baseUrl}/${id}`);
@@ -114,7 +119,8 @@ export class BlogService {
     );
   }
 
-  addComment(postId: number, comment: Comment): Observable<BlogPost> {
+  /** userId / userName are set by the server from the token, not sent. */
+  addComment(postId: number, comment: Partial<Comment>): Observable<BlogPost> {
     return this.http.post<BlogPost>(`${this.baseUrl}/${postId}/comments`, comment).pipe(
       tap(() => this.refresh().subscribe())
     );

@@ -1,0 +1,211 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- Heading -->
+  <div class="flex flex-wrap items-start justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 tracking-tight">My space</h1>
+      <p class="mt-1 text-gray-600">
+        Hello {{ keyCloakService.fullName }} — everything you published and reported.
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <button (click)="newPost()"
+              class="px-4 py-2.5 rounded-lg border border-primary-600 text-primary-700 font-medium
+                     hover:bg-primary-50 transition">
+        Write a post
+      </button>
+      <button (click)="newPet()"
+              class="px-4 py-2.5 rounded-lg bg-primary-600 text-white font-medium
+                     hover:bg-primary-700 transition shadow-sm">
+        Publish a listing
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <button (click)="select('pets')"
+            class="text-left bg-white rounded-xl border p-5 transition hover:shadow-md"
+            [class]="activeTab === 'pets' ? 'border-primary-400 ring-1 ring-primary-200' : 'border-gray-200'">
+      <p class="text-sm font-medium text-gray-500">My listings</p>
+      <p class="mt-1 text-3xl font-bold text-gray-900">{{ myPets.length }}</p>
+      <p class="mt-1 text-xs text-gray-500">pets you offered for adoption</p>
+    </button>
+
+    <button (click)="select('posts')"
+            class="text-left bg-white rounded-xl border p-5 transition hover:shadow-md"
+            [class]="activeTab === 'posts' ? 'border-primary-400 ring-1 ring-primary-200' : 'border-gray-200'">
+      <p class="text-sm font-medium text-gray-500">My posts</p>
+      <p class="mt-1 text-3xl font-bold text-gray-900">{{ myPosts.length }}</p>
+      <p class="mt-1 text-xs" [class]="pendingPosts ? 'text-amber-600 font-medium' : 'text-gray-500'">
+        {{ pendingPosts ? pendingPosts + ' awaiting moderation' : 'all reviewed' }}
+      </p>
+    </button>
+
+    <button (click)="select('reports')"
+            class="text-left bg-white rounded-xl border p-5 transition hover:shadow-md"
+            [class]="activeTab === 'reports' ? 'border-primary-400 ring-1 ring-primary-200' : 'border-gray-200'">
+      <p class="text-sm font-medium text-gray-500">My reports</p>
+      <p class="mt-1 text-3xl font-bold text-gray-900">{{ myReports.length }}</p>
+      <p class="mt-1 text-xs" [class]="openReports ? 'text-amber-600 font-medium' : 'text-gray-500'">
+        {{ openReports ? openReports + ' still open' : 'all handled' }}
+      </p>
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="grid gap-3">
+      @for (i of [1,2,3]; track i) {
+        <div class="h-20 rounded-xl bg-gray-100 animate-pulse"></div>
+      }
+    </div>
+  } @else {
+
+    <!-- ---------------------------------------------------------- listings -->
+    @if (activeTab === 'pets') {
+      @if (myPets.length === 0) {
+        <div class="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center">
+          <p class="text-lg font-semibold text-gray-900">No listing yet</p>
+          <p class="mt-1 text-gray-600">Publish a pet and it appears here, ready to edit.</p>
+          <button (click)="newPet()"
+                  class="mt-5 px-5 py-2.5 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 transition">
+            Publish a listing
+          </button>
+        </div>
+      } @else {
+        <div class="grid gap-3">
+          @for (pet of myPets; track pet.id) {
+            <div class="bg-white rounded-xl border border-gray-200 p-4 flex flex-wrap items-center gap-4
+                        hover:shadow-md transition">
+              <img [src]="pet.imageUrl || 'favicon.ico'" [alt]="pet.name"
+                   class="w-16 h-16 rounded-lg object-cover bg-gray-100 shrink-0">
+
+              <div class="flex-1 min-w-0">
+                <a [routerLink]="['/pets/details', pet.id]"
+                   class="font-semibold text-gray-900 hover:text-primary-600 transition">{{ pet.name }}</a>
+                <p class="text-sm text-gray-500 truncate">
+                  {{ pet.breed }} · {{ pet.location }} · {{ pet.likes }} likes
+                </p>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                <button (click)="editPet(pet.id)"
+                        class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 border border-gray-300
+                               hover:bg-gray-50 transition">Edit</button>
+                <button (click)="askDelete('pet', pet.id, pet.name)"
+                        class="px-3 py-1.5 rounded-lg text-sm font-medium text-red-600 border border-red-200
+                               hover:bg-red-50 transition">Delete</button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ------------------------------------------------------------- posts -->
+    @if (activeTab === 'posts') {
+      @if (myPosts.length === 0) {
+        <div class="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center">
+          <p class="text-lg font-semibold text-gray-900">Nothing written yet</p>
+          <p class="mt-1 text-gray-600">
+            Your posts land here. A moderator reviews them before they go public.
+          </p>
+          <button (click)="newPost()"
+                  class="mt-5 px-5 py-2.5 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 transition">
+            Write a post
+          </button>
+        </div>
+      } @else {
+        <div class="grid gap-3">
+          @for (post of myPosts; track post.id) {
+            <div class="bg-white rounded-xl border border-gray-200 p-4 flex flex-wrap items-center gap-4
+                        hover:shadow-md transition">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <a [routerLink]="['/blogs/details', post.id]"
+                     class="font-semibold text-gray-900 hover:text-primary-600 transition">{{ post.title }}</a>
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold" [class]="statusClass(post.status)">
+                    {{ statusLabel(post.status) }}
+                  </span>
+                </div>
+                <p class="text-sm text-gray-500">
+                  {{ post.datePublished | date:'mediumDate' }} · {{ post.likes }} likes
+                </p>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                <button (click)="editPost(post.id)"
+                        class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 border border-gray-300
+                               hover:bg-gray-50 transition">Edit</button>
+                <button (click)="askDelete('post', post.id, post.title)"
+                        class="px-3 py-1.5 rounded-lg text-sm font-medium text-red-600 border border-red-200
+                               hover:bg-red-50 transition">Delete</button>
+              </div>
+            </div>
+          }
+        </div>
+        <p class="mt-4 text-sm text-gray-500">
+          Editing a published post sends it back for moderation.
+        </p>
+      }
+    }
+
+    <!-- ----------------------------------------------------------- reports -->
+    @if (activeTab === 'reports') {
+      @if (myReports.length === 0) {
+        <div class="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center">
+          <p class="text-lg font-semibold text-gray-900">No report filed</p>
+          <p class="mt-1 text-gray-600">
+            Spotted something wrong? Report it from a listing or a post, and follow it here.
+          </p>
+        </div>
+      } @else {
+        <div class="grid gap-3">
+          @for (report of myReports; track report.id) {
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-600">
+                  {{ report.type === 'pet' ? 'Listing' : 'Post' }}
+                </span>
+                <span class="font-semibold text-gray-900">{{ report.itemTitle }}</span>
+                <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold" [class]="statusClass(report.status)">
+                  {{ statusLabel(report.status) }}
+                </span>
+                <span class="ml-auto text-sm text-gray-500">{{ report.dateReported | date:'mediumDate' }}</span>
+              </div>
+              <p class="mt-2 text-sm text-gray-600">
+                <span class="font-medium text-gray-700">{{ report.reason }}</span> — {{ report.description }}
+              </p>
+            </div>
+          }
+        </div>
+        <p class="mt-4 text-sm text-gray-500">
+          A moderator reviews each report. You cannot change their outcome.
+        </p>
+      }
+    }
+  }
+</div>
+
+<!-- Delete confirmation -->
+@if (pendingDeletion) {
+  <div class="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4" (click)="cancelDelete()">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
+      <h2 class="text-lg font-bold text-gray-900">Delete this {{ pendingDeletion.kind === 'pet' ? 'listing' : 'post' }}?</h2>
+      <p class="mt-2 text-gray-600">
+        "{{ pendingDeletion.label }}" will be removed for good. This cannot be undone.
+      </p>
+      <div class="mt-6 flex justify-end gap-2">
+        <button (click)="cancelDelete()"
+                class="px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition">
+          Cancel
+        </button>
+        <button (click)="confirmDelete()"
+                class="px-4 py-2 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 transition">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+}

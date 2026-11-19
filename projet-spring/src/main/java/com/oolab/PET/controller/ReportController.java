@@ -20,26 +20,31 @@ public class ReportController {
         this.reportService = reportService;
     }
 
-    // The moderation queue is for administrators only.
+    /** The moderation queue: everything everyone reported. */
     @PreAuthorize("hasRole('client_admin')")
     @GetMapping
     public List<Report> getAll() {
         return reportService.findAll();
     }
 
+    /** What the caller reported, so they can follow it up. */
+    @GetMapping("/me")
+    public List<Report> getMine() {
+        return reportService.findMine();
+    }
+
+    /** Anyone signed in may report; the server records who did. */
     @PostMapping
     public Report create(@RequestBody Report report) {
         return reportService.create(report);
     }
 
-    // Only administrators handle a report.
     @PreAuthorize("hasRole('client_admin')")
     @PutMapping("/{id}/status")
     public Report updateStatus(@PathVariable Long id, @RequestParam String status) {
         return reportService.updateStatus(id, status);
     }
 
-    // Only administrators dismiss a report.
     @PreAuthorize("hasRole('client_admin')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

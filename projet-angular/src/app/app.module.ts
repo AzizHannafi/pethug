@@ -11,6 +11,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HomeComponent } from './home/home.component';
 import { httpTokenInterceptor } from './interceptor/http-token.interceptor';
+import { httpErrorInterceptor } from './interceptor/http-error.interceptor';
+import { NotificationsComponent } from './shared/notifications/notifications.component';
 
 /**
  * Runtime configuration must be read before Keycloak is initialised,
@@ -27,7 +29,8 @@ export function appInitFactory(configService: AppConfigService, kcService: Keycl
   declarations: [
     AppComponent,
     HeaderComponent,
-    HomeComponent
+    HomeComponent,
+    NotificationsComponent
   ],
   imports: [
     CommonModule,
@@ -44,7 +47,8 @@ export function appInitFactory(configService: AppConfigService, kcService: Keycl
       multi: true
     },
     provideHttpClient(
-      withInterceptors([httpTokenInterceptor]),
+      // Order matters: attach the token first, then translate failures.
+      withInterceptors([httpTokenInterceptor, httpErrorInterceptor]),
     ),
   ],
   bootstrap: [AppComponent]

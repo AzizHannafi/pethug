@@ -4,6 +4,7 @@ import com.oolab.PET.enity.Comment;
 import com.oolab.PET.enity.Pet;
 import com.oolab.PET.exception.ResourceNotFoundException;
 import com.oolab.PET.repository.PetRepository;
+import com.oolab.PET.security.CurrentUser;
 import com.oolab.PET.service.PetService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -16,14 +17,21 @@ import java.util.List;
 public class PetServiceImpl implements PetService {
 
     private final PetRepository petRepository;
+    private final CurrentUser currentUser;
 
-    public PetServiceImpl(PetRepository petRepository) {
+    public PetServiceImpl(PetRepository petRepository, CurrentUser currentUser) {
         this.petRepository = petRepository;
+        this.currentUser = currentUser;
     }
 
     @Override
     public List<Pet> findAll() {
         return petRepository.findAll();
+    }
+
+    @Override
+    public List<Pet> findMine() {
+        return petRepository.findByOwnerIdOrderByDateAddedDesc(currentUser.id());
     }
 
     @Override
@@ -38,12 +46,16 @@ public class PetServiceImpl implements PetService {
         pet.setDateAdded(new Date());
         pet.setLikes(0);
         pet.getComments().clear();
+        // Ownership comes from the token, never from the request body.
+        pet.setOwnerId(currentUser.id());
+        pet.setOwnerName(currentUser.displayName());
         return petRepository.save(pet);
     }
 
     @Override
     public Pet update(Long id, Pet pet) {
         Pet existing = findById(id);
+        currentUser.assertCanManage(existing.getOwnerId(), "pet listings");
         existing.setName(pet.getName());
         existing.setType(pet.getType());
         existing.setBreed(pet.getBreed());
@@ -63,6 +75,7 @@ public class PetServiceImpl implements PetService {
     @Override
     public void delete(Long id) {
         Pet existing = findById(id);
+        currentUser.assertCanManage(existing.getOwnerId(), "pet listings");
         petRepository.delete(existing);
     }
 
@@ -77,9 +90,9 @@ public class PetServiceImpl implements PetService {
     public Pet addComment(Long id, Comment comment) {
         Pet existing = findById(id);
         comment.setId(null);
-        if (comment.getDatePosted() == null) {
-            comment.setDatePosted(new Date());
-        }
+        comment.setUserId(currentUser.id());
+        comment.setUserName(currentUser.displayName());
+        comment.setDatePosted(new Date());
         existing.getComments().add(comment);
         return petRepository.save(existing);
     }

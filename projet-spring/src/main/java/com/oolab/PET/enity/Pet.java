@@ -23,6 +23,12 @@ public class Pet {
     @Column(nullable = false)
     private String name;
 
+    /** Keycloak user id of whoever published the listing. Set by the server. */
+    private String ownerId;
+
+    /** Display name of the owner, kept so the UI does not have to resolve ids. */
+    private String ownerName;
+
     /** dog | cat | bird | rabbit | other */
     private String type;
 

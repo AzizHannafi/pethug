@@ -43,7 +43,13 @@ export class ReportsService {
     return this.reports$;
   }
 
-  createReport(reportData: Omit<Report, 'id' | 'dateReported' | 'status'>): Observable<Report> {
+  /** What the signed-in user reported. Allowed for everyone, unlike getReports(). */
+  getMyReports(): Observable<Report[]> {
+    return this.http.get<Report[]>(`${this.baseUrl}/me`);
+  }
+
+  /** reporterId / reporterName are set by the server from the token, not sent. */
+  createReport(reportData: Omit<Report, 'id' | 'dateReported' | 'status' | 'reporterId' | 'reporterName'>): Observable<Report> {
     return this.http.post<Report>(this.baseUrl, reportData).pipe(
       tap(() => this.refresh().subscribe())
     );
