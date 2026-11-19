@@ -1,192 +1,188 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Reports Management</h1>
-        <p class="text-gray-600">Review and manage user reports</p>
+
+  <!-- Heading -->
+  <div class="flex items-start gap-3 mb-6">
+    <span class="mt-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">ADMIN</span>
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Moderation queue</h1>
+      <p class="mt-1 text-gray-600">What members flagged, and what you decided about it.</p>
+    </div>
+  </div>
+
+  <!-- Counters -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <p class="text-sm font-medium text-gray-500">Pending</p>
+      <p class="mt-1 text-3xl font-bold text-amber-600">{{ countByStatus('pending') }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <p class="text-sm font-medium text-gray-500">Under review</p>
+      <p class="mt-1 text-3xl font-bold text-blue-600">{{ countByStatus('reviewed') }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <p class="text-sm font-medium text-gray-500">Resolved</p>
+      <p class="mt-1 text-3xl font-bold text-emerald-600">{{ countByStatus('resolved') }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <p class="text-sm font-medium text-gray-500">Total</p>
+      <p class="mt-1 text-3xl font-bold text-gray-900">{{ allReports.length }}</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="status" class="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
+        <select id="status" [(ngModel)]="statusFilter" (change)="applyFilters()"
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-white
+                       focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none transition">
+          <option value="all">All reports</option>
+          <option value="pending">Pending</option>
+          <option value="reviewed">Under review</option>
+          <option value="resolved">Resolved</option>
+        </select>
       </div>
-
-      <!-- Filters -->
-      <div class="card p-6 mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              id="statusFilter"
-              [(ngModel)]="statusFilter"
-              (change)="applyFilters()"
-              class="input-field"
-            >
-              <option value="all">All Reports</option>
-              <option value="pending">Pending Review</option>
-              <option value="reviewed">Under Review</option>
-              <option value="resolved">Resolved</option>
-            </select>
-          </div>
-          
-          <div>
-            <label for="typeFilter" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-            <select
-              id="typeFilter"
-              [(ngModel)]="typeFilter"
-              (change)="applyFilters()"
-              class="input-field"
-            >
-              <option value="all">All Types</option>
-              <option value="pet">Pet Reports</option>
-              <option value="blog">Blog Reports</option>
-            </select>
-          </div>
-        </div>
+      <div>
+        <label for="type" class="block text-sm font-medium text-gray-700 mb-1.5">Type</label>
+        <select id="type" [(ngModel)]="typeFilter" (change)="applyFilters()"
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-white
+                       focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none transition">
+          <option value="all">All types</option>
+          <option value="pet">Pet listings</option>
+          <option value="blog">Blog posts</option>
+        </select>
       </div>
+    </div>
+  </div>
 
-      <!-- Statistics -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="card p-6">
-          <div class="flex items-center">
-            <div class="p-2 bg-yellow-100 rounded-lg">
-              <svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Pending</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ getReportCountByStatus('pending') }}</p>
-            </div>
+  <!-- Content. Cards rather than a wide table: everything fits, no sideways scrolling. -->
+  @if (isLoading) {
+    <div class="grid gap-3">
+      @for (i of [1,2,3]; track i) {
+        <div class="h-32 rounded-xl bg-gray-100 animate-pulse"></div>
+      }
+    </div>
+  } @else if (failed) {
+    <div class="bg-white rounded-xl border border-red-200 p-12 text-center">
+      <p class="text-lg font-semibold text-gray-900">The queue could not be loaded</p>
+      <p class="mt-1 text-gray-600">This is not the same thing as having no reports.</p>
+      <button (click)="load()"
+              class="mt-5 px-5 py-2.5 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 transition">
+        Try again
+      </button>
+    </div>
+  } @else if (filteredReports.length === 0) {
+    <div class="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center">
+      <p class="text-lg font-semibold text-gray-900">Nothing to moderate</p>
+      <p class="mt-1 text-gray-600">
+        {{ allReports.length ? 'No report matches these filters.' : 'No member has reported anything yet.' }}
+      </p>
+    </div>
+  } @else {
+
+    <p class="text-sm text-gray-600 mb-4">
+      Showing <span class="font-semibold text-gray-900">{{ filteredReports.length }}</span>
+      report{{ filteredReports.length === 1 ? '' : 's' }}
+    </p>
+
+    <div class="grid gap-3">
+      @for (report of filteredReports; track report.id) {
+        <article class="bg-white rounded-xl border border-gray-200 p-5"
+                 [class.opacity-60]="isBusy(report)">
+
+          <!-- What was reported -->
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-600">
+              {{ report.type === 'pet' ? 'Listing' : 'Post' }}
+            </span>
+            <button (click)="viewItem(report)"
+                    class="font-semibold text-gray-900 hover:text-primary-600 transition">
+              {{ report.itemTitle }}
+            </button>
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold" [class]="statusClass(report.status)">
+              {{ statusLabel(report.status) }}
+            </span>
+            <span class="ml-auto text-sm text-gray-500">{{ report.dateReported | date:'medium' }}</span>
           </div>
-        </div>
 
-        <div class="card p-6">
-          <div class="flex items-center">
-            <div class="p-2 bg-blue-100 rounded-lg">
-              <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Under Review</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ getReportCountByStatus('reviewed') }}</p>
-            </div>
+          <!-- Why -->
+          <p class="mt-3 text-sm text-gray-700">
+            <span class="font-semibold capitalize">{{ report.reason }}</span>
+            @if (report.description) {
+              <span class="text-gray-600"> — {{ report.description }}</span>
+            }
+          </p>
+
+          <p class="mt-1 text-xs text-gray-500">Reported by {{ report.reporterName }}</p>
+
+          <!-- Decide -->
+          <div class="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center gap-2">
+
+            <button (click)="viewItem(report)" [disabled]="isBusy(report)"
+                    class="px-3.5 py-2 rounded-lg text-sm font-medium text-gray-700 border border-gray-300
+                           hover:bg-gray-50 transition disabled:opacity-50">
+              View the {{ report.type === 'pet' ? 'listing' : 'post' }}
+            </button>
+
+            @if (report.status === 'pending') {
+              <button (click)="setStatus(report, 'reviewed')" [disabled]="isBusy(report)"
+                      class="px-3.5 py-2 rounded-lg text-sm font-medium text-blue-700 border border-blue-200
+                             hover:bg-blue-50 transition disabled:opacity-50">
+                Start review
+              </button>
+            }
+
+            @if (report.status !== 'resolved') {
+              <button (click)="setStatus(report, 'resolved')" [disabled]="isBusy(report)"
+                      class="px-3.5 py-2 rounded-lg text-sm font-medium text-white bg-emerald-600
+                             hover:bg-emerald-700 transition disabled:opacity-50">
+                Resolve
+              </button>
+            } @else {
+              <button (click)="setStatus(report, 'pending')" [disabled]="isBusy(report)"
+                      class="px-3.5 py-2 rounded-lg text-sm font-medium text-amber-700 border border-amber-200
+                             hover:bg-amber-50 transition disabled:opacity-50">
+                Reopen
+              </button>
+            }
+
+            <button (click)="askDismiss(report)" [disabled]="isBusy(report)"
+                    class="ml-auto px-3.5 py-2 rounded-lg text-sm font-medium text-red-600 border border-red-200
+                           hover:bg-red-50 transition disabled:opacity-50">
+              Dismiss
+            </button>
           </div>
-        </div>
+        </article>
+      }
+    </div>
 
-        <div class="card p-6">
-          <div class="flex items-center">
-            <div class="p-2 bg-green-100 rounded-lg">
-              <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Resolved</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ getReportCountByStatus('resolved') }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="card p-6">
-          <div class="flex items-center">
-            <div class="p-2 bg-gray-100 rounded-lg">
-              <svg class="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Total Reports</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ allReports.length }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Results Count -->
-      <div class="mb-6">
-        <p class="text-gray-600">Showing {{ filteredReports.length }} reports</p>
-      </div>
-
-      <!-- Reports Table -->
-      <div class="card overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reporter</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr *ngFor="let report of filteredReports" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
-                      <div class="h-10 w-10 rounded-lg flex items-center justify-center"
-                           [class.bg-blue-100]="report.type === 'pet'"
-                           [class.bg-green-100]="report.type === 'blog'">
-                        <svg *ngIf="report.type === 'pet'" class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 2L3 7v11a1 1 0 001 1h3v-7a1 1 0 011-1h4a1 1 0 011 1v7h3a1 1 0 001-1V7l-7-5z"/>
-                        </svg>
-                        <svg *ngIf="report.type === 'blog'" class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                      </div>
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">{{ report.itemTitle }}</div>
-                      <div class="text-sm text-gray-500">{{ report.type | titlecase }}</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">{{ report.reporterName }}</div>
-                  <div class="text-sm text-gray-500">ID: {{ report.reporterId }}</div>
-                </td>
-                <td class="px-6 py-4">
-                  <div class="text-sm text-gray-900 font-medium">{{ report.reason | titlecase }}</div>
-                  <div class="text-sm text-gray-500 mt-1 max-w-xs truncate">{{ report.description }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ report.dateReported | date:'short' }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span 
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                    [class.bg-yellow-100]="report.status === 'pending'"
-                    [class.text-yellow-800]="report.status === 'pending'"
-                    [class.bg-blue-100]="report.status === 'reviewed'"
-                    [class.text-blue-800]="report.status === 'reviewed'"
-                    [class.bg-green-100]="report.status === 'resolved'"
-                    [class.text-green-800]="report.status === 'resolved'"
-                  >
-                    {{ report.status | titlecase }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div class="flex space-x-2">
-                    <a 
-                      [routerLink]="report.type === 'pet' ? ['/pets', report.itemId] : ['/blog', report.itemId]" 
-                      class="text-primary-600 hover:text-primary-900"
-                      target="_blank"
-                    >
-                      View Item
-                    </a>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- No Results -->
-      <div *ngIf="filteredReports.length === 0" class="text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">No reports found</h3>
-        <p class="mt-1 text-sm text-gray-500">
-          {{ statusFilter === 'all' ? 'No reports have been submitted yet.' : 'No reports match the selected filters.' }}
-        </p>
-      </div>
+    <p class="mt-4 text-sm text-gray-500">
+      Resolving a report closes it. Dismissing deletes the report itself — to remove the
+      offending content, open it and delete it there.
+    </p>
+  }
 </div>
+
+<!-- Dismiss confirmation -->
+@if (pendingDismissal) {
+  <div class="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4" (click)="cancelDismiss()">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
+      <h2 class="text-lg font-bold text-gray-900">Dismiss this report?</h2>
+      <p class="mt-2 text-gray-600">
+        The report about "{{ pendingDismissal.itemTitle }}" will be deleted and leaves the queue.
+        The reported {{ pendingDismissal.type === 'pet' ? 'listing' : 'post' }} itself stays online.
+      </p>
+      <div class="mt-6 flex justify-end gap-2">
+        <button (click)="cancelDismiss()"
+                class="px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition">
+          Cancel
+        </button>
+        <button (click)="confirmDismiss()"
+                class="px-4 py-2 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 transition">
+          Dismiss
+        </button>
+      </div>
+    </div>
+  </div>
+}
