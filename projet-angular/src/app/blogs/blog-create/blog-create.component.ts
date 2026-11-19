@@ -3,6 +3,7 @@ import { BlogPost } from '../../types/interface';
 import { BlogService } from '../../services/blog.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '../../services/notification.service';
+import { KeycloackService } from '../../services/keycloack.service';
 
 @Component({
   selector: 'app-blog-create',
@@ -30,7 +31,8 @@ export class BlogCreateComponent  implements OnInit {
     private blogService: BlogService,
     private router: Router,
     private route: ActivatedRoute,
-    private notifications: NotificationService
+    private notifications: NotificationService,
+    private keyCloakService: KeycloackService
   ){}
 
   ngOnInit(): void {
@@ -39,10 +41,20 @@ export class BlogCreateComponent  implements OnInit {
       this.isEditing = true;
       this.blogService.getBlogPostById(this.postId).subscribe({
         next: existingPost => {
+          // Tell the user up front, rather than letting them rewrite a whole
+          // post only to be refused on submit.
+          if (!this.keyCloakService.canManage(existingPost.authorId)) {
+            this.notifications.denied(
+              'You cannot edit this post',
+              'Only its author, or an administrator, can.'
+            );
+            this.router.navigate(['/blogs/details', this.postId]);
+            return;
+          }
           this.blogPost = { ...existingPost };
           this.tagsString = (existingPost.tags ?? []).join(', ');
         },
-        error: err => console.error('Failed to load blog post', err)
+        error: () => {}
       });
     }
   }

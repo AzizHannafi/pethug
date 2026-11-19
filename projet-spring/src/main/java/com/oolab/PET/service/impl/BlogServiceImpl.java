@@ -27,7 +27,17 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     public List<Blog> findAll() {
-        return blogRepository.findAll();
+        List<Blog> all = blogRepository.findAll();
+        if (currentUser.isAdmin()) {
+            return all;
+        }
+        // A post awaiting moderation is not public. Hiding it in the UI is not
+        // enough: it should not leave the server in the first place. Authors
+        // still see their own, whatever the status.
+        return all.stream()
+                .filter(blog -> "approved".equals(blog.getStatus())
+                        || currentUser.owns(blog.getAuthorId()))
+                .toList();
     }
 
     @Override

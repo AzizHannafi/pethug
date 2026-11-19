@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { Observable } from 'rxjs';
 import { BlogPost, Pet, Report } from '../types/interface';
 import { PetService } from '../services/pet.service';
 import { BlogService } from '../services/blog.service';
@@ -14,6 +14,13 @@ type PendingDeletion =
   | { kind: 'pet'; id: number; label: string }
   | { kind: 'post'; id: number; label: string };
 
+/** Each list loads on its own, so one broken endpoint cannot blank the page. */
+interface Section<T> {
+  items: T[];
+  loading: boolean;
+  failed: boolean;
+}
+
 @Component({
   selector: 'app-account',
   standalone: false,
@@ -23,11 +30,10 @@ export class AccountComponent implements OnInit {
 
   activeTab: Tab = 'pets';
 
-  myPets: Pet[] = [];
-  myPosts: BlogPost[] = [];
-  myReports: Report[] = [];
+  pets: Section<Pet> = { items: [], loading: true, failed: false };
+  posts: Section<BlogPost> = { items: [], loading: true, failed: false };
+  reports: Section<Report> = { items: [], loading: true, failed: false };
 
-  isLoading = true;
   pendingDeletion: PendingDeletion | null = null;
 
   constructor(
@@ -44,36 +50,54 @@ export class AccountComponent implements OnInit {
   }
 
   load(): void {
-    this.isLoading = true;
-    // One round trip for the three lists, so the page settles in one go.
-    forkJoin({
-      pets: this.petService.getMyPets(),
-      posts: this.blogService.getMyBlogPosts(),
-      reports: this.reportsService.getMyReports()
-    }).subscribe({
-      next: ({ pets, posts, reports }) => {
-        this.myPets = pets;
-        this.myPosts = posts;
-        this.myReports = reports;
-        this.isLoading = false;
+    this.fill(this.pets, this.petService.getMyPets());
+    this.fill(this.posts, this.blogService.getMyBlogPosts());
+    this.fill(this.reports, this.reportsService.getMyReports());
+  }
+
+  /**
+   * Showing "0" when the request failed is a lie: the section says so instead,
+   * and offers to try again.
+   */
+  private fill<T>(section: Section<T>, request$: Observable<T[]>): void {
+    section.loading = true;
+    section.failed = false;
+    request$.subscribe({
+      next: items => {
+        section.items = items ?? [];
+        section.loading = false;
       },
       error: () => {
-        // The interceptor already told the user what went wrong.
-        this.isLoading = false;
+        // The interceptor already explained what went wrong.
+        section.items = [];
+        section.loading = false;
+        section.failed = true;
       }
     });
+  }
+
+  retry(): void {
+    this.load();
   }
 
   select(tab: Tab): void {
     this.activeTab = tab;
   }
 
+  get isLoading(): boolean {
+    return this.pets.loading || this.posts.loading || this.reports.loading;
+  }
+
+  get anyFailed(): boolean {
+    return this.pets.failed || this.posts.failed || this.reports.failed;
+  }
+
   get pendingPosts(): number {
-    return this.myPosts.filter(post => post.status === 'pending').length;
+    return this.posts.items.filter(post => post.status === 'pending').length;
   }
 
   get openReports(): number {
-    return this.myReports.filter(report => report.status !== 'resolved').length;
+    return this.reports.items.filter(report => report.status !== 'resolved').length;
   }
 
   // ---------------------------------------------------------------- actions
@@ -121,7 +145,6 @@ export class AccountComponent implements OnInit {
         );
         this.load();
       },
-      // A refusal is already explained by the interceptor.
       error: () => {}
     });
   }

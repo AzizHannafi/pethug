@@ -3,6 +3,7 @@ import { Pet } from '../../types/interface';
 import { PetService } from '../../services/pet.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '../../services/notification.service';
+import { KeycloackService } from '../../services/keycloack.service';
 
 @Component({
   selector: 'app-pet-create',
@@ -37,7 +38,8 @@ export class PetCreateComponent implements OnInit {
     private petService: PetService,
     private router: Router,
     private route: ActivatedRoute,
-    private notifications: NotificationService
+    private notifications: NotificationService,
+    private keyCloakService: KeycloackService
   ){}
 
 
@@ -46,8 +48,20 @@ export class PetCreateComponent implements OnInit {
     if (this.petId) {
       this.isEditing = true;
       this.petService.getPetById(this.petId).subscribe({
-        next: existingPet => this.pet = { ...existingPet },
-        error: err => console.error('Failed to load pet', err)
+        next: existingPet => {
+          // Tell the user up front, rather than letting them fill in a whole
+          // form only to be refused on submit.
+          if (!this.keyCloakService.canManage(existingPet.ownerId)) {
+            this.notifications.denied(
+              'You cannot edit this listing',
+              'Only the person who published it, or an administrator, can.'
+            );
+            this.router.navigate(['/pets/details', this.petId]);
+            return;
+          }
+          this.pet = { ...existingPet };
+        },
+        error: () => {}
       });
     }
   }
